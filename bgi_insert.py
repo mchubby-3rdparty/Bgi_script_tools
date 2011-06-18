@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
 # BGI script inserter
 
@@ -87,6 +87,6 @@ if __name__ == '__main__':
 	for arg in sys.argv[2:]:
 		for script in glob.glob(arg):
 			base, ext = os.path.splitext(script)
-			if not ext:
+			if not ext and os.path.isfile(script):
 				print('Inserting %s...' % script)
 				insert_script(out_dir, script, bgi_setup.ilang)

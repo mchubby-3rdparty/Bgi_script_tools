@@ -25,8 +25,6 @@ It is typical in this section to see a ton of file names. Just leave these alone
 All text lines are prefixed with an identifier (language + line #) in brackets. Do not modify this as it's needed for reinsertion.
 Comments can be added to the dump files by using // (C++ style) at the beginning of the line.
 Each text line is marked with a comment that identifes what kind of text it is. 
-Occasionly, a line will be misidentified and will have the wrong comment and/or be in the wrong section (routine used for this isn't perfect).
-Regardless of that, all text used in the script should be present in the file so it should still insert fine.
 
 Inserting the scripts is done via bgi_insert.py.
 Syntax is bgi_insert.py <output_directory> <script_file(s)>.

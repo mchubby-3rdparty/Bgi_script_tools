@@ -66,6 +66,11 @@ def get_text_section(text_bytes):
 		text_section[addr] = text
 	return text_section
 	
+	type is config['STR_TYPE']
+	
+def check(code_bytes, pos, cfcn, cpos):
+	return cfcn is not None and get_dword(code_bytes, pos+cpos) == cfcn
+	
 def get_code_section(code_bytes, text_section, config):
 	pos = 4
 	code_size = len(code_bytes)
@@ -78,45 +83,53 @@ def get_code_section(code_bytes, text_section, config):
 		dword = get_dword(code_bytes, pos)
 		text_addr = dword - code_size
 		# check if address is in text section and data type is string or file
-		if text_addr in text_section and (type is config['STR_TYPE'] or type is config['FILE_TYPE']):
+		if text_addr in text_section:
 			text = text_section[text_addr]
-			if config['TEXT_FCN'] is not None and get_dword(code_bytes, pos+config['NAME_POS']) == config['TEXT_FCN']: # check if name (0140)
-				marker = 'N'
-				comment = 'NAME'
-				if text not in names:
-					names[text] = ids[marker]
+			if type == config['STR_TYPE']:
+				if check(code_bytes, pos, config['TEXT_FCN'], config['NAME_POS']): # check if name (0140)
+					marker = 'N'
+					comment = 'NAME'
+					if text not in names:
+						names[text] = ids[marker]
+						ids[marker] += 1
+					id = names[text]
+				elif check(code_bytes, pos, config['TEXT_FCN'], config['TEXT_POS']): # check if text (0140)
+					marker = 'T'
+					name_dword = get_dword(code_bytes, pos+config['TEXT_POS']-config['NAME_POS'])
+					if name_dword != 0:
+						try:
+							name_addr = name_dword - code_size
+							name = text_section[name_addr]
+							comment = 'TEXT 【%s】' % name
+						except KeyError:
+							comment = 'TEXT'
+					else:
+						comment= 'TEXT'
+					id = ids[marker]
 					ids[marker] += 1
-				id = names[text]
-			elif config['TEXT_FCN'] is not None and get_dword(code_bytes, pos+config['TEXT_POS']) == config['TEXT_FCN']: # check if text (0140)
-				marker = 'T'
-				name_dword = get_dword(code_bytes, pos+config['TEXT_POS']-config['NAME_POS'])
-				if name_dword != 0:
-					try:
-						name_addr = name_dword - code_size
-						name = text_section[name_addr]
-						comment = 'TEXT 【%s】' % name
-					except KeyError:
-						comment = 'TEXT'
+				elif check(code_bytes, pos, config['RUBY_FCN'], config['RUBYK_POS']): # check if ruby kanji (014b)
+					marker = 'T'
+					comment = 'TEXT RUBY KANJI'
+					id = ids[marker]
+					ids[marker] += 1
+				elif check(code_bytes, pos, config['RUBY_FCN'], config['RUBYF_POS']): # check if ruby furigana (014b)
+					marker = 'T'
+					comment = 'TEXT RUBY FURIGANA'
+					id = ids[marker]
+					ids[marker] += 1
+				elif check(code_bytes, pos, config['BKLG_FCN'], config['BKLG_POS']): # check if backlog text (0143)
+					marker = 'T'
+					comment = 'TEXT BACKLOG'
+					id = ids[marker]
+					ids[marker] += 1
 				else:
-					comment= 'TEXT'
-				id = ids[marker]
-				ids[marker] += 1
-			elif config['RUBY_FCN'] is not None and get_dword(code_bytes, pos+config['RUBYK_POS']) == config['RUBY_FCN']: # check if ruby kanji (014b)
-				marker = 'T'
-				comment = 'TEXT RUBY KANJI'
-				id = ids[marker]
-				ids[marker] += 1
-			elif config['RUBY_FCN'] is not None and get_dword(code_bytes, pos+config['RUBYF_POS']) == config['RUBY_FCN']: # check if ruby furigana (014b)
-				marker = 'T'
-				comment = 'TEXT RUBY FURIGANA'
-				id = ids[marker]
-				ids[marker] += 1
-			elif config['BKLG_FCN'] is not None and get_dword(code_bytes, pos+config['BKLG_POS']) == config['BKLG_FCN']: # check if backlog text (0143)
-				marker = 'T'
-				comment = 'TEXT BACKLOG'
-				id = ids[marker]
-				ids[marker] += 1
-			else:
+					marker = 'Z'
+					comment = 'OTHER'
+					if text not in others:
+						others[text] = ids[marker]
+						ids[marker] += 1
+					id = others[text]
+			elif type == config['FILE_TYPE']:
 				marker = 'Z'
 				comment = 'OTHER'
 				if text not in others:

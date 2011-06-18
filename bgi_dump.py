@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
 # BGI script dumper
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	for arg in sys.argv[1:]:
 		for script in glob.glob(arg):
 			base, ext = os.path.splitext(script)
-			if not ext:
+			if not ext and os.path.isfile(script):
 				print('Dumping %s...' % script)
 				dump_script(script)
 			
