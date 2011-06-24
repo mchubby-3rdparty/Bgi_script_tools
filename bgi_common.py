@@ -129,6 +129,8 @@ def get_code_section(code_bytes, text_section, config):
 						others[text] = ids[marker]
 						ids[marker] += 1
 					id = others[text]
+				record = text, id, marker, comment
+				code_section[pos] = record
 			elif type == config['FILE_TYPE']:
 				marker = 'Z'
 				comment = 'OTHER'
@@ -136,7 +138,7 @@ def get_code_section(code_bytes, text_section, config):
 					others[text] = ids[marker]
 					ids[marker] += 1
 				id = others[text]
-			record = text, id, marker, comment
-			code_section[pos] = record
+				record = text, id, marker, comment
+				code_section[pos] = record
 		pos += 4
 	return code_section
