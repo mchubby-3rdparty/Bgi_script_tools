@@ -60,7 +60,7 @@ def get_text_section(text_bytes):
 	for string in strings:
 		addrs.append(pos)
 		pos += len(string) + 1
-	texts = [x.decode(bgi_setup.senc) for x in strings]
+	texts = [x.decode(bgi_setup.senc, 'ignore') for x in strings]
 	text_section = {}
 	for addr,text in zip(addrs,texts):
 		text_section[addr] = text
